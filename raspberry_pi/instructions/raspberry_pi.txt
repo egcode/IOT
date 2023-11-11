@@ -1,0 +1,264 @@
+ssh eugene@192.168.68.68
+
+
+// - Initial Install
+----------------
+
+//SSH and Camera 
+Menu >> Preferences >> Raspberry Pi Configuration
+
+// Screen Rotate
+sudo nano /boot/config.txt 
+// set
+lcd_rotate=2
+
+
+
+------------------------------------------------------------------
+# Camera test:
+libcamera-hello -t o
+#or
+libcamera-vid -t 0
+
+
+
+------------------------------------------------------------------
+
+
+libcamera-vid -t 0 | cvlc -vvv stream:///dev/stdin --sout '#rtp{sdp=rtsp://:8554}' :demux=h264
+
+rtsp://192.168.68.60:8554/
+http://192.168.68.60:8554
+
+
+
+
+libcamera-vid -t 0 |cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8554}' :demux=h264
+
+
+libcamera-vid -t 0 --width 640 --height 480 --codec h264 --inline --listen -o tcp://0.0.0.0:8888
+tcp://192.168.68.60:8888/
+h264://192.168.68.60:8888/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------
+
+// Virtual Keyboard
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install matchbox-keyboard
+sudo reboot
+
+Menu >> Accessories >> Keyboard
+----------------
+
+// bluetooth keyboard
+sudo bluetoothctl
+agent on
+default-agent 
+scan on
+
+To pair the device, type pair [device Bluetooth address]. 
+The command will look something like pair XX:XX:XX:XX:XX:XX
+
+
+// bluetooth keyboard Graphical
+sudo apt-get install bluetooth bluez blueman
+sudo reboot
+
+----------------
+
+// SSH
+// if this error 
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+// remove host if exists
+ssh-keygen -R "192.168.1.128"
+
+----------------
+
+
+// Clean stuff
+sudo apt-get purge wolfram-engine
+sudo apt-get purge libreoffice*
+sudo apt-get clean
+sudo apt-get autoremove
+
+// Install Git
+sudo apt-get install git-core
+git --version
+
+
+// SWAP
+sudo nano /etc/dphys-swapfile
+sudo /etc/init.d/dphys-swapfile restart
+
+
+ssh pi@192.168.1.128
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+// NSSDK v2
+git clone -b ncsdk2 https://github.com/movidius/ncsdk.git
+
+// SKLEARN
+sudo apt install python3-sklearn 
+
+
+// to remove error: Warning **: Error retrieving accessibility bus address:
+sudo apt-get install at-spi2-core
+
+
+// for rtsp vlc
+sudo apt-get install vlc-nox
+
+//-- Stream to vlc
+raspivid -o - -t 0 -hf -w 640 -h 360 -fps 25 | cvlc -vvv stream:///dev/stdin --sout '#rtp{sdp=rtsp://:8554}' :demux=h264
+raspivid -o - -t 0 -hf -w 640 -h 360 -fps 24 |cvlc -vvv stream:///dev/stdin --sout '#standard{access=http,mux=ts,dst=:8554}' :demux=h264
+
+// open with vlc
+rtsp://192.168.68.60:8554/
+http://192.168.68.60:8888
+
+---------------------------
+Alternative VLC setup:
+
+#if your plan is to run vlc without gui you it can be run in a headless server 
+vlc -I http --http-port 8888 --http-password 12345 
+then access it with http://localhost:8888
+
+---------------------------
+// Node install
+sudo apt-get update
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+sudo apt-get install nodejs
+
+
+------------------------------------------------------------------
+Camera
+# If you are using the new Raspberry Pi OS, the camera interface is disabled. 
+# The workaround is to open a terminal Ctrl+Alt+t and type 
+sudo raspi-config
+# go to Interface Options and then Legacy Camera and reboot. These camera interfaces are deprecated and will # not be supported going forwards. So use with caution and check for updates.
+
+#verify that your system detects the camera with the command 
+sudo vcgencmd get_camera
+#in the /boot/config.txt file remove the # or add the following
+dtoverlay=vc4-fkms-v3d
+dtoverlay=imx219
+
+
+------------------------------------------------------------------
+// install OpenCV
+https://www.pyimagesearch.com/2017/09/04/raspbian-stretch-install-opencv-3-python-on-your-raspberry-pi/
+
+// Accessing the Raspberry Pi Camera with OpenCV and Python
+https://www.pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/
+
+
+wget -O opencv.zip https://github.com/Itseez/opencv/archive/3.4.2.zip
+wget -O opencv_contrib.zip https://github.com/Itseez/opencv_contrib/archive/3.4.2.zip
+
+
+cmake -D CMAKE_BUILD_TYPE=RELEASE \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D INSTALL_PYTHON_EXAMPLES=ON \
+    -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib-3.4.2/modules \
+    -D BUILD_EXAMPLES=ON ..
+
+------------------------------------------------------------------
+
+// Copy SSH
+scp pi@192.168.1.128:/home/pi/workspace/ncappzoo/tensorflow/inception_v4/inception_v4.py /Users/yujin/Desktop/inception_v4.py
+scp pi@192.168.1.128:/home/pi/workspace/ncappzoo/tensorflow/inception_v4/run.py /Users/yujin/Desktop/run.py
+scp pi@192.168.1.128:/home/pi/workspace/ncappzoo/tensorflow/inception_v4/save_session.py /Users/yujin/Desktop/save_session.py
+
+// from mac
+scp /Users/yujin/Documents/Developer/raspberry_pi/instructions/cam_tests/opencv_cam.py pi@192.168.1.128:/home/pi/Desktop/opencv_cam.py
+scp /Users/yujin/Documents/Developer/raspberry_pi/instructions/cam_tests/vlc_stream.sh pi@192.168.1.128:/home/pi/Desktop/vlc_stream.sh
+
+scp /Users/yujin/Desktop/raspberry_pi/tiny_yolo_v2/run_video.py pi@192.168.1.128:/home/pi/ncappzoo/tensorflow/tiny_yolo_v2/run_video.py
+
+
+// to mac
+scp pi@192.168.1.128:/home/pi/Desktop/opencv_cam.py /Users/yujin/Documents/Developer/raspberry_pi/instructions/cam_tests/opencv_cam.py 
+scp pi@192.168.1.128:/home/pi/Desktop/vlc_stream.sh /Users/yujin/Documents/Developer/raspberry_pi/instructions/cam_tests/vlc_stream.sh 
+
+// to raspberry OpenCV
+scp -r /Users/yujin/Documents/Developer/raspberry_pi/opencv_examples/FaceDetect_Movidius pi@192.168.1.128:/home/pi/opencv_examples/FaceDetect_Movidius  
+
+scp -r /Users/yujin/Documents/Developer/Computer-Vision/facenet/contributed pi@192.168.1.128:/home/pi/facenet/contributed
+
+
+
+
+scp -r /Users/yujin/Documents/Developer/Computer-Vision/facenet/src/freeze_graph_output.pb pi@192.168.1.128:/home/pi/freeze_graph_output.pb  
+
+
+
+
+mvNCCompile -s 12 deploy.prototxt -w res10_300x300_ssd_iter_140000.caffemodel -o facedetectgraph.graph
+
+----------
+ssh pi@192.168.1.128
+python3 -c "import caffe"
+
+make all -j4
+make test -j4
+make runtest -j4
+----------------
+
+
+
+
+----------------
+python3 -c "import tensorflow as tf; print(tf.__version__)"
+python3 -c "import cv2; print(cv2.__version__)"
+
+
+### path to cv2.cpython-36m-arm-linux-gnueabihf.so file
+export PYTHONPATH=/usr/local/lib/python3.6/site-packages:$PYTHONPATH 
+
+mvNCCompile model.ckpt.meta -s 12 -in=input  -o movidius.graph
+
+
+
+
+
+
+wget https://github.com/bazelbuild/bazel/releases/download/0.15.0/bazel-0.15.0-dist.zip
+
+----------------
+
+Found 2 possible inputs: (name=phase_train, type=bool(10), shape=<unknown>) (name=batch_size, type=int32(3), shape=<unknown>) 
+No variables spotted.
+Found 2 possible outputs: (name=label_batch, op=Identity) (name=embeddings, op=Mul) 
+Found 23512505 (23.51M) const parameters, 0 (0) variable parameters, and 675 control_edges
+Op types used: 2019 Switch, 1104 Const, 1056 Identity, 449 Sub, 449 Merge, 248 Mul, 224 FusedBatchNorm, 132 Conv2D, 131 Relu, 23 ConcatV2, 23 Add, 21 BiasAdd, 3 MaxPool, 3 Shape, 3 Reshape, 2 Placeholder, 1 QueueDequeueUpToV2, 1 AvgPool, 1 Sum, 1 StridedSlice, 1 Square, 1 Rsqrt, 1 RealDiv, 1 RandomUniform, 1 FIFOQueueV2, 1 Pack, 1 Maximum, 1 MatMul, 1 Floor
+To use with tensorflow/tools/benchmark:benchmark_model try these arguments:
+bazel run tensorflow/tools/benchmark:benchmark_model -- --graph=freeze_graph_output.pb --show_flops --input_layer=phase_train,batch_size --input_layer_type=bool,int32 --input_layer_shape=: --output_layer=label_batch,embeddings
+
+
+
+mvNCCompile ./model-20180402-114759.meta -w model-20180402-114759 -s 12 -in=batch_size -on=embeddings -is 224 224 -o facenetShit.graph
+
+
+mvNCCompile model-20180402-114759.meta -w model-20180402-114759 -s 12 -in input -on output -o facenet_celeb_ncs.graph
+
+
+
