@@ -16,4 +16,5 @@ vncserver
 # destroy VNC server
 vncserver -kill :1
 
-
+#pinout
+pinout
