@@ -1,0 +1,12 @@
+# ping server
+curl http://192.168.68.68:8080/led/on
+curl http://192.168.68.68:8080/led/off
+
+# heavy server loading testing with apache bench
+# apache bench sends batches requests 
+
+# 100 requests
+ab -n 100 http://192.168.68.68:8080/led/on
+
+# 1000 requests with 10 at a time
+ab -n 1000 -c 10 http://192.168.68.68:8080/led/on
