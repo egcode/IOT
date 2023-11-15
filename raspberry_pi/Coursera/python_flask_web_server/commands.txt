@@ -1,0 +1,23 @@
+# Python environment setup inside project directory
+# Python environment within a project directory
+python3 -m venv venv
+
+# Activate the environment
+source venv/bin/activate
+# or
+. venv/bin/activate
+
+# To check if python is sourced
+which python3
+
+
+# To deactivate
+deactivate
+
+
+#### FLASK
+# run flask
+FLASK_APP=api.py flask run
+
+# to check go to
+http://127.0.0.1:5000/led/on
