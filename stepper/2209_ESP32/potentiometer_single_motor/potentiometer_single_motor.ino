@@ -20,10 +20,18 @@
 #define R_SENSE          0.11f      // R_SENSE for current calc.
 #define DRIVER_ADDRESS   0b00       // TMC2209 Driver address according to MS1 and MS2
 
+// Potentiometer variables
+#define AN_Pot1    35
+int pval1, prev1, pval2, prev2 = 0;
+int long move_to_1, move_to_2 = 0;
+
 //Change these values to get different results
 long long  move_to_step = 100000; //Change this value to set the position to move to (Negative will reverse)
-long  set_velocity = 20000;
-int  set_accel = 5000;
+// long  set_velocity = 20000; // Default
+long  set_velocity = 120000;
+
+// int  set_accel = 5000; // Default
+int  set_accel = 45000;
 int  set_current = 600;
 
 // IF StallGuard does not work, it's because these two values are not set correctly or your pins are not correct.
@@ -101,39 +109,52 @@ void setup() {
 
 void loop()
 {
-  stalled_motor = false;
-  stepper->moveTo(move_to_step);
-  while (stepper->getCurrentPosition() != stepper->targetPos())
-  {
+  // stalled_motor = false;
+  // stepper->moveTo(move_to_step);
+  // while (stepper->getCurrentPosition() != stepper->targetPos())
+  // {
 
-    Serial.print("SG_RESULT: ");
-    Serial.println(driver.SG_RESULT());
-    Serial.print("TSTEP: ");
-    Serial.println(driver.TSTEP()); //Check TSTEP value
+  //   Serial.print("SG_RESULT: ");
+  //   Serial.println(driver.SG_RESULT());
+  //   Serial.print("TSTEP: ");
+  //   Serial.println(driver.TSTEP()); //Check TSTEP value
 
-    if (stalled_motor == true)
-    {
-      Serial.println("Stalled");
-      stepper->forceStop();
-      break;
+  //   if (stalled_motor == true)
+  //   {
+  //     Serial.println("Stalled");
+  //     stepper->forceStop();
+  //     break;
+  //   }
+  // }
+
+  // stalled_motor = false;
+  // stepper->moveTo(0);
+
+  // while (stepper->getCurrentPosition() != stepper->targetPos())
+  // {
+  //   Serial.print("SG_RESULT: ");
+  //   Serial.println(driver.SG_RESULT());
+  //   Serial.print("TSTEP: ");
+  //   Serial.println(driver.TSTEP());
+
+  //   if (stalled_motor == true)
+  //   {
+  //     Serial.println("Stalled");
+  //     stepper->forceStop();
+  //     break;
+  //   }
+  // }
+
+
+    int margin = 30; 
+    pval1 = analogRead(AN_Pot1);
+    if ((pval1 > prev1 + margin) || (pval1 < prev1 - margin)) {
+      move_to_1 = map(pval1, 0, 4095, 0, 12800);
+      stepper->moveTo(move_to_1);
+      Serial.print("move_to_1: ");
+      Serial.println(move_to_1);
+      prev1 = pval1;
     }
-  }
 
-  stalled_motor = false;
-  stepper->moveTo(0);
-
-  while (stepper->getCurrentPosition() != stepper->targetPos())
-  {
-    Serial.print("SG_RESULT: ");
-    Serial.println(driver.SG_RESULT());
-    Serial.print("TSTEP: ");
-    Serial.println(driver.TSTEP());
-
-    if (stalled_motor == true)
-    {
-      Serial.println("Stalled");
-      stepper->forceStop();
-      break;
-    }
-  }
 }
+
