@@ -20,10 +20,10 @@
 #define R_SENSE          0.11f      // R_SENSE for current calc.
 #define DRIVER_ADDRESS   0b00       // TMC2209 Driver address according to MS1 and MS2
 
-#define STEP_PIN_2       2 
-#define DIR_PIN_2        25  
-#define ENABLE_PIN_2     33  
-#define DRIVER_ADDRESS_2   0b01       // TMC2209 Driver address according to MS1 and MS2
+#define STEP_PIN_2          2 
+#define DIR_PIN_2           25  
+#define ENABLE_PIN_2        33  
+#define DRIVER_ADDRESS_2    0b01       // TMC2209 Driver address according to MS1 and MS2
 
 
 
@@ -38,10 +38,10 @@ int long move_to_1, move_to_2 = 0;
 //Change these values to get different results
 long long  move_to_step = 100000; //Change this value to set the position to move to (Negative will reverse)
 // long  set_velocity = 20000; // Default
-long  set_velocity = 120000;
+long  set_velocity = 170000;
 
 // int  set_accel = 5000; // Default
-int  set_accel = 45000;
+int  set_accel = 125000;
 int  set_current = 600;
 
 // IF StallGuard does not work, it's because these two values are not set correctly or your pins are not correct.
@@ -66,6 +66,10 @@ FastAccelStepperEngine engine = FastAccelStepperEngine();
 FastAccelStepper *stepper = NULL;
 TMC2209Stepper driver(&SERIAL_PORT_2, R_SENSE , DRIVER_ADDRESS);
 
+FastAccelStepperEngine engine2 = FastAccelStepperEngine();
+FastAccelStepper *stepper2 = NULL;
+TMC2209Stepper driver2(&SERIAL_PORT_2, R_SENSE , DRIVER_ADDRESS_2);
+
 #if defined(ESP32) //ESP32 needs special "IRAM_ATTR" in interrupt
 void IRAM_ATTR stalled_position()
 {
@@ -87,6 +91,8 @@ void setup() {
   #endif
   pinMode(ENABLE_PIN, OUTPUT);
   pinMode(STALLGUARD , INPUT);
+  pinMode(ENABLE_PIN_2, OUTPUT);
+
   attachInterrupt(digitalPinToInterrupt(STALLGUARD), stalled_position, RISING);
   
   driver.begin(); // Start all the UART communications functions behind the scenes
@@ -114,6 +120,33 @@ void setup() {
   stepper->setSpeedInHz(set_velocity);
   stepper->setAcceleration(set_accel);
   stepper->setCurrentPosition(0);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+  driver2.begin(); // Start all the UART communications functions behind the scenes
+  driver2.toff(4); //For operation with StealthChop, this parameter is not used, but it is required to enable the motor. In case of operation with StealthChop only, any setting is OK
+  driver2.blank_time(24); //Recommended blank time select value
+  driver2.I_scale_analog(false); // Disbaled to use the extrenal current sense resistors
+  driver2.internal_Rsense(false); // Use the external Current Sense Resistors. Do not use the internal resistor as it can't handle high current.
+  driver2.mstep_reg_select(true); //Microstep resolution selected by MSTEP register and NOT from the legacy pins.
+  driver2.microsteps(motor_microsteps); //Set the number of microsteps. Due to the "MicroPlyer" feature, all steps get converterd to 256 microsteps automatically. However, setting a higher step count allows you to more accurately more the motor exactly where you want.
+  driver2.TPWMTHRS(0); //DisableStealthChop PWM mode/ Page 25 of datasheet
+  driver2.semin(0); // Turn off smart current control, known as CoolStep. It's a neat feature but is more complex and messes with StallGuard.
+  driver2.shaft(true); // Set the shaft direction.
+  driver2.en_spreadCycle(false); // Disable SpreadCycle. We want StealthChop becuase it works with StallGuard.
+  driver2.pdn_disable(true); // Enable UART control
+  driver2.VACTUAL(0); // Enable UART control
+  driver2.rms_current(set_current);
+  driver2.SGTHRS(set_stall);
+  driver2.TCOOLTHRS(set_tcools);
+  
+  engine2.init();
+  stepper2 = engine.stepperConnectToPin(STEP_PIN_2);
+  stepper2->setDirectionPin(DIR_PIN_2);
+  stepper2->setEnablePin(ENABLE_PIN_2);
+  stepper2->setAutoEnable(true);
+  stepper2->setSpeedInHz(170000);
+  stepper2->setAcceleration(125000);
+  stepper2->setCurrentPosition(0);
 
 }
 
@@ -158,18 +191,18 @@ void loop()
 
     int margin = 30; 
     pval1 = analogRead(AN_Pot1);
-    // if ((pval1 > prev1 + margin) || (pval1 < prev1 - margin)) {
-    //   move_to_1 = map(pval1, 0, 4095, 0, 12800);
-    //   stepper->moveTo(move_to_1);
-    //   Serial.print("move_to_1: ");
-    //   Serial.println(move_to_1);
-    //   prev1 = pval1;
-    // }
+    if ((pval1 > prev1 + margin) || (pval1 < prev1 - margin)) {
+      move_to_1 = map(pval1, 0, 4095, 0, 12800);
+      stepper->moveTo(move_to_1);
+      Serial.print("move_to_1: ");
+      Serial.println(move_to_1);
+      prev1 = pval1;
+    }
 
     pval2 = analogRead(AN_Pot2);
     if ((pval2 > prev2 + margin) || (pval2 < prev2 - margin)) {
       move_to_2 = map(pval2, 0, 4095, 0, 12800);
-      stepper->moveTo(move_to_2);
+      stepper2->moveTo(move_to_2);
       Serial.print("move_to_2: ");
       Serial.println(move_to_2);
       prev2 = pval2;
