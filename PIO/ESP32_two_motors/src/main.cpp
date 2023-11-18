@@ -187,7 +187,7 @@ void loop()
   // }
 
 
-    int margin = 30; 
+    int margin = 200; 
     pval1 = analogRead(AN_Pot1);
     if ((pval1 > prev1 + margin) || (pval1 < prev1 - margin)) {
       move_to_1 = map(pval1, 0, 4095, 0, 12800);
