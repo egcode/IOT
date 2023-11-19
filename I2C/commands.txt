@@ -1,0 +1,14 @@
+# install tools if needed
+sudo apt-get install i2c-tools
+
+# Either for Python 2.7  
+pip install smbus2  
+# Or, for Python 3  
+pip3 install smbus2
+
+
+# check ports enabled from a config
+ls /dev/*i2c*
+
+# check connection to I2C ports
+sudo i2cdetect -y 1
