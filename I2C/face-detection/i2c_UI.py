@@ -9,8 +9,8 @@ def on_button_click(direction):
     ########
     bus = smbus.SMBus(1)
     address = 0x8 # bus address
-    vertical_step_num = 100
-    horizontal_step_num = 300
+    vertical_step_num = 30
+    horizontal_step_num = 200
     num1, num2 = 0, 0
 
     if direction == "top":
