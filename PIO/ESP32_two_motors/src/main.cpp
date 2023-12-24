@@ -34,12 +34,12 @@ int pval1, prev1, pval2, prev2 = 0;
 int long move_to_1, move_to_2 = 0;
 
 //Change these values to get different results
-long long  move_to_step = 100000; //Change this value to set the position to move to (Negative will reverse)
+long long  move_to_step = 1000000; //Change this value to set the position to move to (Negative will reverse)
 // long  set_velocity = 20000; // Default
-long  set_velocity = 170000;
+long  set_velocity = 30000;
 
 // int  set_accel = 5000; // Default
-int  set_accel = 325000;
+int  set_accel = 35000;
 int  set_current = 600;
 
 // IF StallGuard does not work, it's because these two values are not set correctly or your pins are not correct.
@@ -80,7 +80,70 @@ void stalled_position()
 }
 #endif
 
-void setup() {
+#include <Wire.h>
+// I2C stuff
+const int ledPin = 2; 
+#define ESP32_ADDRESS 0x8
+// int data [4];
+// int x = 0;
+
+// byte receivedData[sizeof(long)];  // Use an array of bytes
+// int receivedValue;
+
+
+// Function that executes whenever data is received from master
+// void receiveEvent(int howMany) {
+//   while (Wire.available()) { // loop through all but the last
+//     char c = Wire.read(); // receive byte as a character
+//     digitalWrite(ledPin, c);
+//     Serial.print("Received values: ");
+//     Serial.print(c);
+
+//   }
+// }
+
+// void receiveEvent(int byteCount) {
+//   int receivedNumber = 0;
+//   for (int i = 0; i < byteCount; i++) {
+//     receivedNumber = (receivedNumber << 8) | Wire.read();
+//   }
+//   Serial.println("Received number: " + String(receivedNumber));
+// }
+
+void receiveEvent(int byteCount) {
+   int data [byteCount];
+   int x = 0;
+   while(Wire.available()) {               //Wire.available() returns the number of bytes available for retrieval with Wire.read(). Or it returns TRUE for values >0.
+       data[x]=Wire.read();
+       x++;
+    }
+   
+     Serial.println("----");
+     Serial.print("byteCount: ");
+     Serial.print(byteCount);
+
+    for (int i=0;i<byteCount;i++) {
+      Serial.print("\t");
+      Serial.print(data[i]);
+    }
+
+     Serial.println("----");
+
+    int32_t receivedNum1 = (data[3] << 24) | ((data[2] << 16) | ((data[1] << 8) | data[0]));
+    Serial.print("Received num1: ");
+    Serial.println(receivedNum1);
+    stepper->moveTo(receivedNum1);
+
+    int32_t receivedNum2 = (data[7] << 24) | ((data[6] << 16) | ((data[5] << 8) | data[4]));
+    Serial.print("Received num2: ");
+    Serial.println(receivedNum2);
+    stepper2->moveTo(receivedNum2);
+  }
+
+
+
+void setup() {  
+
   Serial.begin(115200);
   #if defined(ESP32)
   SERIAL_PORT_2.begin(115200, SERIAL_8N1, RXD2, TXD2); // ESP32 can use any pins to Serial
@@ -142,14 +205,24 @@ void setup() {
   stepper2->setDirectionPin(DIR_PIN_2);
   stepper2->setEnablePin(ENABLE_PIN_2);
   stepper2->setAutoEnable(true);
-  stepper2->setSpeedInHz(170000);
-  stepper2->setAcceleration(325000);
+  // stepper2->setSpeedInHz(160000);
+  // stepper2->setAcceleration(270000);
+  stepper2->setSpeedInHz(set_velocity);
+  stepper2->setAcceleration(set_accel);
   stepper2->setCurrentPosition(0);
+
+
+  ///// I2C SETUP
+  // Join I2C bus as slave with address 8
+  Wire.begin(ESP32_ADDRESS);
+  Wire.onReceive(receiveEvent);
 
 }
 
 void loop()
 {
+    delay(100);
+
   // stalled_motor = false;
   // stepper->moveTo(move_to_step);
   // while (stepper->getCurrentPosition() != stepper->targetPos())
@@ -167,44 +240,41 @@ void loop()
   //     break;
   //   }
   // }
-
   // stalled_motor = false;
-  // stepper->moveTo(0);
+  // stepper2->moveTo(move_to_step);
 
-  // while (stepper->getCurrentPosition() != stepper->targetPos())
+  // while (stepper2->getCurrentPosition() != stepper2->targetPos())
   // {
   //   Serial.print("SG_RESULT: ");
-  //   Serial.println(driver.SG_RESULT());
+  //   Serial.println(driver2.SG_RESULT());
   //   Serial.print("TSTEP: ");
-  //   Serial.println(driver.TSTEP());
-
-  //   if (stalled_motor == true)
-  //   {
-  //     Serial.println("Stalled");
-  //     stepper->forceStop();
-  //     break;
-  //   }
+  //   Serial.println(driver2.TSTEP());
   // }
 
 
-    int margin = 200; 
-    pval1 = analogRead(AN_Pot1);
-    if ((pval1 > prev1 + margin) || (pval1 < prev1 - margin)) {
-      move_to_1 = map(pval1, 0, 4095, 0, 12800);
-      stepper->moveTo(move_to_1);
-      Serial.print("move_to_1: ");
-      Serial.println(move_to_1);
-      prev1 = pval1;
-    }
+/// POTENTIOMETER
+    // int margin = 100; 
+    // pval1 = analogRead(AN_Pot1);
+    // if ((pval1 > prev1 + margin) || (pval1 < prev1 - margin)) {
+    //   move_to_1 = map(pval1, 0, 4095, 0, 12800/2);
+    //   stepper->moveTo(move_to_1);
+    //   Serial.print("move_to_1: ");
+    //   Serial.println(move_to_1);
+    //   prev1 = pval1;
+    // }
 
-    pval2 = analogRead(AN_Pot2);
-    if ((pval2 > prev2 + margin) || (pval2 < prev2 - margin)) {
-      move_to_2 = map(pval2, 0, 4095, 0, 12800);
-      stepper2->moveTo(move_to_2);
-      Serial.print("move_to_2: ");
-      Serial.println(move_to_2);
-      prev2 = pval2;
-    }
+
+    // int margin2 = 200; 
+    // pval2 = analogRead(AN_Pot2);
+    // if ((pval2 > prev2 + margin2) || (pval2 < prev2 - margin2)) {
+    //   move_to_2 = map(pval2, 0, 4095, 0, 12800*4);
+    //   stepper2->moveTo(move_to_2);
+    //   Serial.print("move_to_2: ");
+    //   Serial.println(move_to_2);
+    //   prev2 = pval2;
+    // }
+
+
+
 
 }
-
