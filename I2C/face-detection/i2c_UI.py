@@ -4,8 +4,7 @@ import smbus
 import time
 
 def on_button_click(direction):
-    text = entry_dict[direction].get()
-    print(f"{direction} button clicked. Custom String: {text}")
+    print(f"{direction} button clicked.")
 
     ########
     bus = smbus.SMBus(1)
@@ -47,17 +46,8 @@ entry_dict = {}
 
 # Function to create buttons and text inputs
 def create_button_and_entry(direction, custom_string):
-    frame = tk.Frame(root)
-    frame.pack(side=direction)
-
-    entry = tk.Entry(frame)
-    entry.pack()
-
-    button = tk.Button(frame, text=custom_string, command=lambda dir=direction: on_button_click(dir))
-    button.pack()
-
-    # Store the entry widget in the dictionary
-    entry_dict[direction] = entry
+    button = tk.Button(root, text=custom_string, command=lambda dir=direction: on_button_click(dir))
+    button.pack(side=direction)
 
 # Create buttons and text inputs for each direction with custom strings
 create_button_and_entry("top", "Up")
