@@ -113,9 +113,9 @@ try:
         # num1 = max(0, min(max16BitInt, num1))
         # num2 = max(0, min(max16BitInt, num2))
 
-        max32BitInt = (1 << 32) - 1 # int_16 max 65535 makes first 8 as ones  1111111111111111111111111111111
-        num1 = max(0, min(max32BitInt, num1))
-        num2 = max(0, min(max32BitInt, num2))
+        # max32BitInt = (1 << 32) - 1 # int_16 max 65535 makes first 8 as ones  1111111111111111111111111111111
+        # num1 = max(0, min(max32BitInt, num1))
+        # num2 = max(0, min(max32BitInt, num2))
 
         num1_part1, num1_part2, num1_part3, num1_part4 = bitSplitIntegerAs32Bit(num1)
         num2_part1, num2_part2, num2_part3, num2_part4 = bitSplitIntegerAs32Bit(num2)

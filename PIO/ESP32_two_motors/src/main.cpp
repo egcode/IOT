@@ -132,12 +132,12 @@ void receiveEvent(int byteCount) {
     int32_t receivedNum1 = (data[3] << 24) | ((data[2] << 16) | ((data[1] << 8) | data[0]));
     Serial.print("Received num1: ");
     Serial.println(receivedNum1);
-    stepper->moveTo(receivedNum1);
+    stepper->move(receivedNum1);
 
     int32_t receivedNum2 = (data[7] << 24) | ((data[6] << 16) | ((data[5] << 8) | data[4]));
     Serial.print("Received num2: ");
     Serial.println(receivedNum2);
-    stepper2->moveTo(receivedNum2);
+    stepper2->move(receivedNum2);
   }
 
 
