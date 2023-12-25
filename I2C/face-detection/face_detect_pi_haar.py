@@ -24,7 +24,7 @@ picam2.preview_configuration.align()
 picam2.start()
 
 last_execution_time = time.time()  # Initialize the last execution time
-execute_every_seconds = 1
+execute_every_seconds = 0
 
 # Draw a big red static cross
 cross_size = 100
