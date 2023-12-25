@@ -1,16 +1,23 @@
 import cv2
 from picamera2 import Picamera2
-
+from libcamera import Transform
 
 # to PI
-# scp -r /Users/eugene/Documents/Repo/IOT/OpenCV/face-tracker/face_detect_pi_haar.py eugene@192.168.68.60:/home/eugene/Documents/IOT/OpenCV/face-tracker/face_detect_pi_haar.py
+# scp -r /Users/eugene/Documents/Repo/IOT/OpenCV/face-tracker/face_detect_pi_haar.py eugene@192.168.68.63:/home/eugene/Documents/IOT/OpenCV/face-tracker/face_detect_pi_haar.py
+
+# picam2 = Picamera2()
+# picam2.preview_configuration.main.size = (320,240)
+# picam2.preview_configuration.main.format = "RGB888"
+# picam2.preview_configuration.align()
+# picam2.configure("preview")
+# picam2.start()
 
 picam2 = Picamera2()
-picam2.preview_configuration.main.size = (320,240)
-picam2.preview_configuration.main.format = "RGB888"
+preview_config = picam2.create_preview_configuration({"format": "RGB888", "size": (320, 240)},transform=Transform(vflip=True))
+picam2.configure(preview_config)
 picam2.preview_configuration.align()
-picam2.configure("preview")
 picam2.start()
+
 
 classifier  = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
